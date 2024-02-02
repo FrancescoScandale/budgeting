@@ -1,5 +1,31 @@
-use std::{fs::File, io::{self, BufRead, Write}, str::FromStr};
+use std::{fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
+use serde_json::from_reader;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct CategoryEntry {
+    category: String,
+    entries: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct JSONData {
+    values: Vec<CategoryEntry>
+}
+
+impl JSONData{
+    fn display_all(values: Vec<CategoryEntry>){
+        for v in values {
+            println!("Category: {}", v.category);
+            println!("Entries:");
+            for e in v.entries {
+                println!("\t{}",e);
+            }
+            println!("----------------------------------------");
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)] // Derive the PartialEq trait for Categories
 enum Categories{
@@ -67,7 +93,7 @@ impl Categories {
     fn display_all() {
         let categories: Vec<Categories> = Categories::get_categories();
 
-        print!("Available categories:\n");
+        print!("\t\tAvailable categories:\n");
         for c in categories {
             print!("\t{}\n",Categories::category_to_string(&c));
         }
@@ -103,16 +129,20 @@ fn find_category(desc: &str) -> Categories {
 }
 
 fn read_csv_input() -> io::Result<()> {
-    let file_path = "reports/report.csv";
-    let file = File::open(file_path)?;
-    let reader = io::BufReader::new(file);
+    let categories_file_path = "files/categories.json";
+    let categories_file: File = File::open(categories_file_path).expect("ERROR - CATEGORIES FILE NOT FOUND");
+    let categories_data: JSONData = from_reader(categories_file).expect("ERROR - FAILED TO DESERIALIZE JSON");
+    JSONData::display_all(categories_data.values);
+
+    let report_file_path = "files/report.csv";
+    let report_file: File = File::open(report_file_path).expect("ERROR - REPORT FILE NOT FOUND");
+    let reader: BufReader<File> = io::BufReader::new(report_file);
 
     let mut entries: Vec<Entries> = Vec::new();
 
     Categories::display_all();
 
     for line in reader.lines().skip(1) {
-        
         let line = line?;
         let mut v: Vec<&str> = line.split(";").collect();
         
