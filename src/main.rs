@@ -1,7 +1,9 @@
-use std::{fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr};
+use std::{collections::HashMap, fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr, sync::Mutex};
 use regex::Regex;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json::from_reader;
+
 
 #[derive(Serialize, Deserialize, Debug)]
 struct CategoryEntry {
@@ -14,20 +16,21 @@ struct JSONData {
     values: Vec<CategoryEntry>
 }
 
-impl JSONData{
-    fn display_all(values: Vec<CategoryEntry>){
-        for v in values {
-            println!("Category: {}", v.category);
-            println!("Entries:");
-            for e in v.entries {
-                println!("\t{}",e);
-            }
-            println!("----------------------------------------");
-        }
-    }
+//definition of the static variable CATEGORIES, initialized as empty
+lazy_static!{
+    static ref CATEGORIES: Mutex<HashMap<String,Categories>> = Mutex::new(HashMap::new());
 }
 
-#[derive(Debug, PartialEq)] // Derive the PartialEq trait for Categories
+/*fn display_all_CATEGORIES(){
+    let categories = CATEGORIES.lock().unwrap();
+
+    println!("TESTING THE HASH MAP");
+    println!("car - {}", Categories::category_to_string(categories.get("M M POMPA BIANCA, RANICA BG").unwrap().clone()));
+    println!("car - {}", Categories::category_to_string(categories.get("AUTOGRILL 0720           CASTROCIELO").unwrap().clone()));
+    println!("food - {}", Categories::category_to_string(categories.get("PESCE FRITTO 'DA PICC..  MARONE").unwrap().clone()));
+}*/
+
+#[derive(Debug, PartialEq, Clone)] // Derive the PartialEq trait for Categories
 enum Categories{
     DEFAULT,
     Groceries,
@@ -36,6 +39,29 @@ enum Categories{
     Car,
     House,
     Fun
+}
+
+impl JSONData{
+    /*fn display_all(&self){
+        for v in &self.values {
+            println!("Category: {}", v.category);
+            println!("Entries:");
+            for e in &v.entries {
+                println!("\t{}",e);
+            }
+            println!("----------------------------------------");
+        }
+    }*/
+
+    fn read_json_data(&self){
+        for v in &self.values {
+            for e in &v.entries {
+                let cat:Categories = Categories::string_to_category(&v.category);
+                let mut categs = CATEGORIES.lock().unwrap();
+                categs.insert(e.to_string(), cat);
+            }
+        }
+    }
 }
 
 struct Entries {
@@ -47,21 +73,30 @@ struct Entries {
 
 impl Entries {
     fn display(entries: &Entries) {
-        println!("{} - {} - {} - {}", entries.date, entries.amount, entries.description, Categories::category_to_string(&entries.category));
+        println!("{} - {} - {} - {}", entries.date, entries.amount, entries.description, Categories::category_to_string(entries.category.clone()));
     }
 }
 
-//TODO: to avoid all these shenanigans, probably better to just set the enum to use &str instead of proper types
 impl Categories {
-    fn get_categories() -> Vec<Categories> {
-        let mut categories: Vec<Categories> = Vec::new();
+    fn display_all() {
+        let categories: Vec<Categories> = Categories::get_categories();
 
-        categories.push(Categories::Groceries);
-        categories.push(Categories::Food);
-        categories.push(Categories::Subscriptions);
-        categories.push(Categories::Car);
-        categories.push(Categories::House);
-        categories.push(Categories::Fun);
+        print!("\n\nAvailable categories:\n");
+        for c in categories {
+            print!("\t{}\n",Categories::category_to_string(c));
+        }
+        print!("\n\n");
+    }
+
+    fn get_categories() -> Vec<Categories> {
+        let categories: Vec<Categories> = vec![
+            Categories::Groceries,
+            Categories::Food,
+            Categories::Subscriptions,
+            Categories::Car,
+            Categories::House,
+            Categories::Fun
+        ];
 
         return categories;
     }
@@ -78,7 +113,7 @@ impl Categories {
         }
     }
 
-    fn category_to_string(cat: &Categories) -> String {
+    fn category_to_string(cat: Categories) -> String {
         match cat {
             Categories::Groceries => "Groceries".to_string(),
             Categories::Food => "Food".to_string(),
@@ -88,16 +123,6 @@ impl Categories {
             Categories::Fun => "Fun".to_string(),
             _ => "DEFAULT".to_string()
         }
-    }
-
-    fn display_all() {
-        let categories: Vec<Categories> = Categories::get_categories();
-
-        print!("\t\tAvailable categories:\n");
-        for c in categories {
-            print!("\t{}\n",Categories::category_to_string(&c));
-        }
-        print!("\n\n");
     }
 }
 
@@ -132,7 +157,7 @@ fn read_csv_input() -> io::Result<()> {
     let categories_file_path = "files/categories.json";
     let categories_file: File = File::open(categories_file_path).expect("ERROR - CATEGORIES FILE NOT FOUND");
     let categories_data: JSONData = from_reader(categories_file).expect("ERROR - FAILED TO DESERIALIZE JSON");
-    JSONData::display_all(categories_data.values);
+    categories_data.read_json_data();
 
     let report_file_path = "files/report.csv";
     let report_file: File = File::open(report_file_path).expect("ERROR - REPORT FILE NOT FOUND");
