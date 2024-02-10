@@ -21,14 +21,15 @@ lazy_static!{
     static ref CATEGORIES: Mutex<HashMap<String,Categories>> = Mutex::new(HashMap::new());
 }
 
-/*fn display_all_CATEGORIES(){
+#[allow(non_snake_case)]
+fn display_all_CATEGORIES(){
     let categories = CATEGORIES.lock().unwrap();
 
     println!("TESTING THE HASH MAP");
-    println!("car - {}", Categories::category_to_string(categories.get("M M POMPA BIANCA, RANICA BG").unwrap().clone()));
-    println!("car - {}", Categories::category_to_string(categories.get("AUTOGRILL 0720           CASTROCIELO").unwrap().clone()));
-    println!("food - {}", Categories::category_to_string(categories.get("PESCE FRITTO 'DA PICC..  MARONE").unwrap().clone()));
-}*/
+    for(key, val) in categories.iter() {
+        println!("{} -> {}",Categories::category_to_string(val.clone()),key);
+    }
+}
 
 #[derive(Debug, PartialEq, Clone)] // Derive the PartialEq trait for Categories
 enum Categories{
@@ -132,6 +133,13 @@ fn find_category(desc: &str) -> Categories {
     let mut chosen_category: Categories = Categories::DEFAULT;
     let mut valid: bool = false;
 
+    //lock mutex and check if description already present
+    let mut categs = CATEGORIES.lock().unwrap();
+    if categs.contains_key(desc) {
+        println!("Description already present: {desc} -> {}",Categories::category_to_string(categs.get(desc).unwrap().clone()));
+        return categs.get(desc).unwrap().clone();
+    }
+
     println!();
     print!("{}\nWhat is the category of the previous description? ",desc);
     io::stdout().flush().expect("Flush failed."); //needed to de-buffer the print
@@ -149,6 +157,9 @@ fn find_category(desc: &str) -> Categories {
             inserted_category.clear();
         }
     }
+
+    //insert description and category
+    categs.insert(desc.to_string(), chosen_category.clone());
 
     return chosen_category;
 }
@@ -198,9 +209,11 @@ fn read_csv_input() -> io::Result<()> {
             category: cat });
     }
 
+    //print final results
     for e in entries {
         Entries::display(&e);
     }
+    display_all_CATEGORIES();
 
     Ok(())
 }
