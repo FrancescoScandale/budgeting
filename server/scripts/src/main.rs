@@ -125,5 +125,6 @@ fn read_csv_input() -> io::Result<()> {
 }
 
 fn main() {
-    _ = read_csv_input();
+    //_ = read_csv_input();
+    println!("EXECUTING RUST PROGRAM!");
 }
