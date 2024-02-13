@@ -1,14 +1,21 @@
+//------------------------------LIBRARIES------------------------------
 use std::{collections::HashMap, fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr, sync::Mutex};
 use regex::Regex;
 use lazy_static::lazy_static;
 use serde_json::from_reader;
+use firebase_rs::*;
+
+//------------------------------MODULES------------------------------
 mod categories; //imports the contents of categories.rs into the current module
 mod jsondata;
+mod firestore_utils;
 
+//------------------------------GLOBAL VARIABLES------------------------------
 lazy_static!{
     static ref CATEGORIZED_DATA: Mutex<HashMap<String,categories::Categories>> = Mutex::new(HashMap::new());
 }
 
+//------------------------------UTILITY AND STRUCTS------------------------------
 #[allow(non_snake_case)]
 fn display_all_CATEGORIES(){
     let categories = CATEGORIZED_DATA.lock().unwrap();
@@ -31,7 +38,7 @@ impl Entries {
         println!("{} - {} - {} - {}", entries.date, entries.amount, entries.description, categories::Categories::category_to_string(entries.category.clone()));
     }
 }
-
+//------------------------------FUNCTIONS------------------------------
 fn find_category(desc: &str) -> categories::Categories {
     let categories: Vec<categories::Categories> = categories::Categories::get_categories();
     let mut inserted_category: String = String::new();
@@ -68,11 +75,13 @@ fn find_category(desc: &str) -> categories::Categories {
 
     return chosen_category;
 }
-
+//------------------------------------------------------------------------
 fn read_csv_input() -> io::Result<()> {
+    categories::Categories::display_all();
+
     let categories_file_path = "files/categories.json";
     let categories_file: File = File::open(categories_file_path).expect("ERROR - CATEGORIES FILE NOT FOUND");
-    let categories_data: jsondata::JSONData = from_reader(categories_file).expect("ERROR - FAILED TO DESERIALIZE JSON");
+    let categories_data: jsondata::JSONData = from_reader(categories_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
     categories_data.read_json_data(&CATEGORIZED_DATA);
 
     let report_file_path = "files/report.csv";
@@ -80,8 +89,6 @@ fn read_csv_input() -> io::Result<()> {
     let reader: BufReader<File> = io::BufReader::new(report_file);
 
     let mut entries: Vec<Entries> = Vec::new();
-
-    categories::Categories::display_all();
 
     for line in reader.lines().skip(1) {
         let line = line?;
@@ -123,8 +130,13 @@ fn read_csv_input() -> io::Result<()> {
 
     Ok(())
 }
+//-------------------------------------------------------------------------
+#[tokio::main]
+async fn main() {
+    let firebase_db: Firebase = firestore_utils::init_firestore();
 
-fn main() {
-    //_ = read_csv_input();
-    println!("EXECUTING RUST PROGRAM!");
+    firestore_utils::test_query(&firebase_db).await;
+
+    //_ = read_csv_input(firestore_db);
+    //println!("EXECUTING RUST PROGRAM!");
 }
