@@ -1,2 +1,3 @@
-/target
-/files
+/server/scripts/target
+/server/scripts/files
+*.vscode
