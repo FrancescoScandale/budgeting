@@ -37,7 +37,7 @@ impl Categories {
         match cat {
             "Groceries" | "groceries" => Categories::Groceries,
             "Food" | "food" => Categories::Food,
-            "Subscription" | "subscription" => Categories::Subscriptions,
+            "Subscriptions" | "subscriptions" => Categories::Subscriptions,
             "Car" | "car" => Categories::Car,
             "House" | "house" => Categories::House,
             "Fun" | "fun" => Categories::Fun,

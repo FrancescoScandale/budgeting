@@ -2,6 +2,7 @@
 use std::{collections::HashMap, fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr, sync::Mutex};
 use regex::Regex;
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use serde_json::from_reader;
 use firebase_rs::*;
 
@@ -16,14 +17,21 @@ lazy_static!{
 }
 
 //------------------------------UTILITY AND STRUCTS------------------------------
-#[allow(non_snake_case)]
-fn display_all_CATEGORIES(){
-    let categories = CATEGORIZED_DATA.lock().unwrap();
+// #[allow(non_snake_case)]
+// fn display_all_CATEGORIES(){
+//     let categories = CATEGORIZED_DATA.lock().unwrap();
 
-    println!("TESTING THE HASH MAP");
-    for(key, val) in categories.iter() {
-        println!("{} -> {}",categories::Categories::category_to_string(val.clone()),key);
-    }
+//     println!("TESTING THE HASH MAP");
+//     for(key, val) in categories.iter() {
+//         println!("{} -> {}",categories::Categories::category_to_string(val.clone()),key);
+//     }
+// }
+
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct Files {
+    CACHE_FILE: String,
+    REPORT_FILE: String
 }
 
 struct Entries {
@@ -79,12 +87,16 @@ fn find_category(desc: &str) -> categories::Categories {
 fn read_csv_input() -> io::Result<()> {
     categories::Categories::display_all();
 
-    let categories_file_path = "files/categories.json";
-    let categories_file: File = File::open(categories_file_path).expect("ERROR - CATEGORIES FILE NOT FOUND");
-    let categories_data: jsondata::JSONData = from_reader(categories_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
-    categories_data.read_json_data(&CATEGORIZED_DATA);
+    let config_file_path: &str = "files/config.json";
+    let config_file: File = File::open(config_file_path).expect("ERROR - CONFIG FILE NOT FOUND");
+    let config_data: Files = from_reader(config_file).expect("ERROR - FAILED TO DESERIALIZE CONFIG FILE");
 
-    let report_file_path = "files/report.csv";
+    let cache_file_path = config_data.CACHE_FILE.clone();
+    let cache_file: File = File::open(cache_file_path).expect("ERROR - CACHE FILE NOT FOUND");
+    let mut cache_data: jsondata::JSONData = from_reader(cache_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
+    cache_data.read_json_data(&CATEGORIZED_DATA);
+
+    let report_file_path = config_data.REPORT_FILE;
     let report_file: File = File::open(report_file_path).expect("ERROR - REPORT FILE NOT FOUND");
     let reader: BufReader<File> = io::BufReader::new(report_file);
 
@@ -123,20 +135,23 @@ fn read_csv_input() -> io::Result<()> {
     }
 
     //print final results
+    println!("\n\n\n---------------------FINAL RESULT---------------------");
     for e in entries {
         Entries::display(&e);
     }
-    display_all_CATEGORIES();
+    cache_data.write_json_data(&CATEGORIZED_DATA, config_data.CACHE_FILE.clone());
+
+    // display_all_CATEGORIES();
 
     Ok(())
 }
 //-------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
-    let firebase_db: Firebase = firestore_utils::init_firestore();
+    //let firebase_db: Firebase = firestore_utils::init_firestore();
 
-    firestore_utils::test_query(&firebase_db).await;
+    //firestore_utils::test_query(&firebase_db).await;
 
-    //_ = read_csv_input(firestore_db);
+    _ = read_csv_input();
     //println!("EXECUTING RUST PROGRAM!");
 }
