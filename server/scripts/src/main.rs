@@ -4,12 +4,10 @@ use regex::Regex;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json::from_reader;
-use firebase_rs::*;
 
 //------------------------------MODULES------------------------------
 mod categories; //imports the contents of categories.rs into the current module
-mod jsondata;
-mod firestore_utils;
+mod cache_data;
 
 //------------------------------GLOBAL VARIABLES------------------------------
 lazy_static!{
@@ -53,7 +51,7 @@ fn find_category(desc: &str) -> categories::Categories {
     let mut chosen_category: categories::Categories = categories::Categories::DEFAULT;
     let mut valid: bool = false;
 
-    //lock mutex and check if description already present
+    //lock mutex and check if description already present in cache
     let mut categs = CATEGORIZED_DATA.lock().unwrap();
     if categs.contains_key(desc) {
         println!("Description already present: {desc} -> {}",categories::Categories::category_to_string(categs.get(desc).unwrap().clone()));
@@ -87,15 +85,18 @@ fn find_category(desc: &str) -> categories::Categories {
 fn read_csv_input() -> io::Result<()> {
     categories::Categories::display_all();
 
+    //read config file
     let config_file_path: &str = "files/config.json";
     let config_file: File = File::open(config_file_path).expect("ERROR - CONFIG FILE NOT FOUND");
     let config_data: Files = from_reader(config_file).expect("ERROR - FAILED TO DESERIALIZE CONFIG FILE");
 
+    //read cache file
     let cache_file_path = config_data.CACHE_FILE.clone();
     let cache_file: File = File::open(cache_file_path).expect("ERROR - CACHE FILE NOT FOUND");
-    let mut cache_data: jsondata::JSONData = from_reader(cache_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
+    let mut cache_data: cache_data::CacheData = from_reader(cache_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
     cache_data.read_json_data(&CATEGORIZED_DATA);
 
+    //read report file
     let report_file_path = config_data.REPORT_FILE;
     let report_file: File = File::open(report_file_path).expect("ERROR - REPORT FILE NOT FOUND");
     let reader: BufReader<File> = io::BufReader::new(report_file);
@@ -107,9 +108,9 @@ fn read_csv_input() -> io::Result<()> {
         let mut v: Vec<&str> = line.split(";").collect();
         
         
-        if v[5] == "" || v[5] == " " { //discard from category choosing the earnings
+        if v[5] == "" || v[5] == " " { //earnings
             v[5] = "0.0";
-        } else {    //categories all the expenses
+        } else {    //expenses (to be placed into categories)
             let amount: String = v[5].replace(",", ".");
 
             //clean description
@@ -148,10 +149,7 @@ fn read_csv_input() -> io::Result<()> {
 //-------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
-    //let firebase_db: Firebase = firestore_utils::init_firestore();
-
-    //firestore_utils::test_query(&firebase_db).await;
-
     _ = read_csv_input();
+    
     //println!("EXECUTING RUST PROGRAM!");
 }
