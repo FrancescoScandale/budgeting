@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Clone, Copy)] // Derive the PartialEq trait for Categories
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum Categories{
     DEFAULT,
     Groceries,
@@ -10,6 +12,7 @@ pub enum Categories{
 }
 
 impl Categories {
+    #[allow(unused)]
     pub fn display_all() {
         let categories: Vec<Categories> = Categories::get_categories();
 

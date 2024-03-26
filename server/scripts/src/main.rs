@@ -1,5 +1,5 @@
 //------------------------------LIBRARIES------------------------------
-use std::{collections::HashMap, fs::File, io::{self, BufRead, BufReader, Write}, str::FromStr, sync::Mutex};
+use std::{collections::HashMap, env, fs::File, io::{self, BufRead, BufReader, Write}, path::PathBuf, str::FromStr, sync::Mutex};
 use regex::Regex;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -8,6 +8,7 @@ use serde_json::from_reader;
 //------------------------------MODULES------------------------------
 mod categories; //imports the contents of categories.rs into the current module
 mod cache_data;
+mod entries;
 
 //------------------------------GLOBAL VARIABLES------------------------------
 lazy_static!{
@@ -15,15 +16,15 @@ lazy_static!{
 }
 
 //------------------------------UTILITY AND STRUCTS------------------------------
-// #[allow(non_snake_case)]
-// fn display_all_CATEGORIES(){
-//     let categories = CATEGORIZED_DATA.lock().unwrap();
+#[allow(non_snake_case, unused)]
+fn display_all_CATEGORIES(){
+    let categories = CATEGORIZED_DATA.lock().unwrap();
 
-//     println!("TESTING THE HASH MAP");
-//     for(key, val) in categories.iter() {
-//         println!("{} -> {}",categories::Categories::category_to_string(val.clone()),key);
-//     }
-// }
+    println!("TESTING THE HASH MAP");
+    for(key, val) in categories.iter() {
+        println!("{} -> {}",categories::Categories::category_to_string(val.clone()),key);
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
@@ -32,18 +33,6 @@ struct Files {
     REPORT_FILE: String
 }
 
-struct Entries {
-    date: String,
-    description: String,
-    amount: f32,
-    category: categories::Categories
-}
-
-impl Entries {
-    fn display(entries: &Entries) {
-        println!("{} - {} - {} - {}", entries.date, entries.amount, entries.description, categories::Categories::category_to_string(entries.category.clone()));
-    }
-}
 //------------------------------FUNCTIONS------------------------------
 fn find_category(desc: &str) -> categories::Categories {
     let categories: Vec<categories::Categories> = categories::Categories::get_categories();
@@ -54,7 +43,7 @@ fn find_category(desc: &str) -> categories::Categories {
     //lock mutex and check if description already present in cache
     let mut categs = CATEGORIZED_DATA.lock().unwrap();
     if categs.contains_key(desc) {
-        println!("Description already present: {desc} -> {}",categories::Categories::category_to_string(categs.get(desc).unwrap().clone()));
+        //println!("Description already present: {desc} -> {}",categories::Categories::category_to_string(categs.get(desc).unwrap().clone()));
         return categs.get(desc).unwrap().clone();
     }
 
@@ -82,29 +71,35 @@ fn find_category(desc: &str) -> categories::Categories {
     return chosen_category;
 }
 //------------------------------------------------------------------------
-fn read_csv_input() -> io::Result<()> {
-    categories::Categories::display_all();
+fn read_csv_input() -> Vec<entries::Entries> {
+    // categories::Categories::display_all();
+    let path: PathBuf = env::current_dir().unwrap(); 
+    let mut path_string: String = path.to_str().unwrap().to_string();
 
     //read config file
-    let config_file_path: &str = "files/config.json";
+    if !path_string.contains("scripts") {
+        path_string = format!("{}{}",path_string,"/scripts"); //append scripts
+    }
+    path_string = format!("{}{}",path_string,"/");
+    let config_file_path: String = format!("{}{}",path_string.as_str(),"files/config.json");
     let config_file: File = File::open(config_file_path).expect("ERROR - CONFIG FILE NOT FOUND");
     let config_data: Files = from_reader(config_file).expect("ERROR - FAILED TO DESERIALIZE CONFIG FILE");
 
     //read cache file
-    let cache_file_path = config_data.CACHE_FILE.clone();
-    let cache_file: File = File::open(cache_file_path).expect("ERROR - CACHE FILE NOT FOUND");
+    let cache_file_path: String = format!("{}{}",path_string.as_str(),&config_data.CACHE_FILE);
+    let cache_file: File = File::open(cache_file_path.clone()).expect("ERROR - CACHE FILE NOT FOUND");
     let mut cache_data: cache_data::CacheData = from_reader(cache_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
     cache_data.read_json_data(&CATEGORIZED_DATA);
 
     //read report file
-    let report_file_path = config_data.REPORT_FILE;
+    let report_file_path: String = format!("{}{}",path_string.as_str(),&config_data.REPORT_FILE);
     let report_file: File = File::open(report_file_path).expect("ERROR - REPORT FILE NOT FOUND");
     let reader: BufReader<File> = io::BufReader::new(report_file);
 
-    let mut entries: Vec<Entries> = Vec::new();
+    let mut result: Vec<entries::Entries> = Vec::new();
 
     for line in reader.lines().skip(1) {
-        let line = line?;
+        let line = line.unwrap();
         let mut v: Vec<&str> = line.split(";").collect();
         
         
@@ -127,28 +122,30 @@ fn read_csv_input() -> io::Result<()> {
             let cat: categories::Categories = find_category(desc);
 
             //push in the structure
-            entries.push(Entries { 
-                date: v[2].to_string(), 
-                description: desc.to_string(), 
-                amount: f32::from_str(&amount).unwrap().abs(), 
-                category: cat });
+            result.push(entries::Entries::new(
+                v[2].to_string(),
+                desc.to_string(),
+                f32::from_str(&amount).unwrap().abs(),
+                cat));
         }
     }
 
-    //print final results
-    println!("\n\n\n---------------------FINAL RESULT---------------------");
-    for e in entries {
-        Entries::display(&e);
-    }
-    cache_data.write_json_data(&CATEGORIZED_DATA, config_data.CACHE_FILE.clone());
+    cache_data.write_json_data(&CATEGORIZED_DATA, cache_file_path);
 
     // display_all_CATEGORIES();
 
-    Ok(())
+    return result;
 }
 //-------------------------------------------------------------------------
 fn main() {
-    _ = read_csv_input();
-    
-    //println!("EXECUTING RUST PROGRAM!");
+    // let path = env::current_dir().unwrap();
+    // println!("The current directory is {}", path.display());
+
+    let final_result: Vec<entries::Entries> = read_csv_input();
+
+    // println!("\n");
+    // entries::Entries::display_vector(&final_result);
+
+    let json_string: String = serde_json::to_string(&final_result).unwrap();
+    println!("{}", json_string);
 }

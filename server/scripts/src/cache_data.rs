@@ -14,16 +14,17 @@ pub struct CacheData {
 }
 
 impl CacheData{
-    // pub fn display_all(&self){
-    //     for v in &self.values {
-    //         println!("Category: {}", v.category);
-    //         println!("Entries:");
-    //         for e in &v.entries {
-    //             println!("\t{}",e);
-    //         }
-    //         println!("----------------------------------------");
-    //     }
-    // }
+    #[allow(unused)]
+    pub fn display_all(&self){
+        for v in &self.values {
+            println!("Category: {}", v.category);
+            println!("Entries:");
+            for e in &v.entries {
+                println!("\t{}",e);
+            }
+            println!("----------------------------------------");
+        }
+    }
     
     pub fn read_json_data(&self, data: &Mutex<HashMap<String,Categories>>){
         let mut categs: std::sync::MutexGuard<'_, HashMap<String, Categories>> = data.lock().unwrap();
