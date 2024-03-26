@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Clone)] // Derive the PartialEq trait for Categories
+#[derive(Debug, PartialEq, Clone, Copy)] // Derive the PartialEq trait for Categories
 pub enum Categories{
     DEFAULT,
     Groceries,

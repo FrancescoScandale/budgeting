@@ -9,11 +9,11 @@ pub struct CategoryEntry {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct JSONData {
+pub struct CacheData {
     values: Vec<CategoryEntry>
 }
 
-impl JSONData{
+impl CacheData{
     // pub fn display_all(&self){
     //     for v in &self.values {
     //         println!("Category: {}", v.category);
@@ -52,7 +52,7 @@ impl JSONData{
 
             if !found_category {
                 self.values.push(CategoryEntry {
-                    category: Categories::category_to_string(categs.get(desc).unwrap().clone()),
+                    category: Categories::category_to_string(categs.get(desc).unwrap().clone()).to_lowercase(),
                     entries: vec![desc.to_string()]
                 });
             }
