@@ -147,8 +147,7 @@ fn read_csv_input() -> io::Result<()> {
     Ok(())
 }
 //-------------------------------------------------------------------------
-#[tokio::main]
-async fn main() {
+fn main() {
     _ = read_csv_input();
     
     //println!("EXECUTING RUST PROGRAM!");
