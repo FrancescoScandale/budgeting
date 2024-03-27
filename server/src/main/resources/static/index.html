@@ -11,6 +11,7 @@
     <h1>File Upload</h1>
     <input type="file" id="fileInput">
     <button onclick="uploadFile()">Upload</button>
+    <div id="response"></div>
 
     <script>
         function uploadFile() {
@@ -24,16 +25,15 @@
                 method: 'POST',
                 body: formData
             })
-                .then(response => {
-                    if (response.ok) {
-                        alert('File uploaded successfully');
-                    } else {
-                        alert('File upload failed');
-                    }
+                .then(response => response.text())
+                .then(result => {
+                    var responseDiv = document.getElementById('response');
+                    responseDiv.innerHTML = result;
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while uploading the file');
+                    var responseDiv = document.getElementById('response');
+                    responseDiv.innerHTML = 'An error occurred while uploading the file';
                 });
         }
     </script>

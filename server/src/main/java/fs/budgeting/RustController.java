@@ -3,22 +3,61 @@ package fs.budgeting;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
-@RestController
+@Controller
 public class RustController {
 
-    //@GetMapping("/budgeting")
-    @GetMapping("/budgeting")
-    public String executeRustProgram() throws IOException, InterruptedException {
+    @RequestMapping("/testingPath")
+    public ResponseEntity<String> testingPath() {
+        try {
+            String workingDir = System.getProperty("user.dir") + "/scripts/files/report.csv";
+
+            return ResponseEntity.ok("Working dir computed: " + workingDir);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to compute working dir");
+        }
+    }
+
+    @RequestMapping("/test")
+    public String test() {
+        return "index.html";
+    }
+
+    @RequestMapping("/budgetInput")
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) throws InterruptedException{
+        try {
+            if(file.isEmpty()){
+                return ResponseEntity.ok("File is empty");
+            }
+
+            //compose target file path
+            String targetFile = System.getProperty("user.dir") + "/scripts/files/report.csv";
+            Path targetFilePath = Paths.get(targetFile);
+
+            //copy file to target file path
+            Files.copy(file.getInputStream(), targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+            String response = executeRustProgram();
+            return ResponseEntity.ok(response);
+        } catch (InterruptedException ie) {
+            throw ie;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file");
+        }
+    }
+
+
+    private String executeRustProgram() throws IOException, InterruptedException {
         //path to Rust executable
         String rustProgramPath = "scripts/target/debug/budgeting";
         
@@ -36,28 +75,9 @@ public class RustController {
         }
 
         int exitCode = process.waitFor();
-        if (exitCode == 0) {
-            return "Rust program executed successfully:\n" + jsonBuilder.toString();
-        } else {
-            return "Error executing Rust program:\n" + jsonBuilder.toString();
+        if (exitCode != 0) {
+            System.out.println("RUST PROGRAM FAILED");
         }
+        return jsonBuilder.toString();
     }
-
-    // @RequestMapping("/test")
-    // public String test() {
-    //     return "index.html";
-    // }
-
-    // @RequestMapping("/budgetInput")
-    // public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
-    //     try {
-    //         // You can handle the file here, for example, save it to disk
-    //         // For demonstration, let's just print the file name
-    //         System.out.println("Received file: " + file.getOriginalFilename());
-    //         return ResponseEntity.ok("File uploaded successfully");
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file");
-    //     }
-    // }
-
 }
