@@ -18,18 +18,7 @@ import java.nio.file.StandardCopyOption;
 @Controller
 public class RustController {
 
-    @RequestMapping("/testingPath")
-    public ResponseEntity<String> testingPath() {
-        try {
-            String workingDir = System.getProperty("user.dir") + "/scripts/files/report.csv";
-
-            return ResponseEntity.ok("Working dir computed: " + workingDir);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to compute working dir");
-        }
-    }
-
-    @RequestMapping("/test")
+    @RequestMapping("/")
     public String test() {
         return "index.html";
     }
@@ -60,7 +49,6 @@ public class RustController {
 
     private String executeRustProgram() throws IOException, InterruptedException {
         //path to Rust executable
-        //String rustProgramPath = "scripts/target/debug/budgeting";
         String rustProgramPath = "deliverables/budgeting";
         
         //execute Rust program using ProcessBuilder
