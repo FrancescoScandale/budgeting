@@ -52,6 +52,7 @@ public class RustController {
         } catch (InterruptedException ie) {
             throw ie;
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file");
         }
     }
@@ -59,7 +60,8 @@ public class RustController {
 
     private String executeRustProgram() throws IOException, InterruptedException {
         //path to Rust executable
-        String rustProgramPath = "scripts/target/debug/budgeting";
+        //String rustProgramPath = "scripts/target/debug/budgeting";
+        String rustProgramPath = "deliverables/budgeting";
         
         //execute Rust program using ProcessBuilder
         ProcessBuilder processBuilder = new ProcessBuilder(rustProgramPath);
