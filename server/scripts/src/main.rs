@@ -9,6 +9,7 @@ use serde_json::from_reader;
 mod categories; //imports the contents of categories.rs into the current module
 mod cache_data;
 mod entries;
+mod display;
 
 //------------------------------GLOBAL VARIABLES------------------------------
 lazy_static!{
