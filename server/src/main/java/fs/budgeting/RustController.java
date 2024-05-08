@@ -3,6 +3,7 @@ package fs.budgeting;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,7 @@ public class RustController {
     }
 
     @RequestMapping("/budgetInput")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) throws InterruptedException{
+    public ResponseEntity<String> handleFileUpload(Model model, @RequestParam("file") MultipartFile file) throws InterruptedException{
         try {
             if(file.isEmpty()){
                 return ResponseEntity.ok("File is empty");

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -8,12 +8,14 @@
 </head>
 
 <body>
-    <h1>File Upload</h1>
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">Upload</button>
+    <h1>Budgeting</h1>
+    <div id="request">
+        <input type="file" id="fileInput">
+        <button onclick="uploadFile()">Upload</button>
+    </div>
     <div id="response"></div>
 
-    <script>
+    <script th:inline="javascript">
         function uploadFile() {
             var fileInput = document.getElementById('fileInput');
             var file = fileInput.files[0];
@@ -29,6 +31,11 @@
                 .then(result => {
                     var responseDiv = document.getElementById('response');
                     responseDiv.innerHTML = result;
+                    // Hide the upload button after receiving the response
+                    var uploadButton = document.getElementById('request');
+                    if (uploadButton) {
+                        uploadButton.style.display = 'none';
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
