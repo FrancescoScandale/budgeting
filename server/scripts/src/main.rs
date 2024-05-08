@@ -146,14 +146,10 @@ fn main() {
 
     let final_result: Vec<entries::Entries> = read_csv_input();
 
-    // println!("\n");
-    // entries::Entries::display_vector(&final_result);
-
-    if args[1]=="cli" {
-        display_result::display_cli_result(final_result);
-    } else {
+    if args.len() == 1 {
         let json_string: String = serde_json::to_string(&final_result).unwrap();
         println!("{}", json_string);
+    } else if args[1] == "cli" {
+        display_result::display_cli_result(final_result);
     }
-
 }
