@@ -9,7 +9,7 @@ use serde_json::from_reader;
 mod categories; //imports the contents of categories.rs into the current module
 mod cache_data;
 mod entries;
-mod display;
+mod display_result;
 
 //------------------------------GLOBAL VARIABLES------------------------------
 lazy_static!{
@@ -139,6 +139,8 @@ fn read_csv_input() -> Vec<entries::Entries> {
 }
 //-------------------------------------------------------------------------
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
     // let path = env::current_dir().unwrap();
     // println!("The current directory is {}", path.display());
 
@@ -147,6 +149,11 @@ fn main() {
     // println!("\n");
     // entries::Entries::display_vector(&final_result);
 
-    let json_string: String = serde_json::to_string(&final_result).unwrap();
-    println!("{}", json_string);
+    if args[1]=="cli" {
+        display_result::display_cli_result(final_result);
+    } else {
+        let json_string: String = serde_json::to_string(&final_result).unwrap();
+        println!("{}", json_string);
+    }
+
 }

@@ -20,6 +20,10 @@ impl Entries {
         }
     }
 
+    pub fn get_category(&self) -> Categories { self.category }
+
+    pub fn get_amount(&self) -> f32 { self.amount }
+
     #[allow(unused)]
     pub fn display_vector(entries: &Vec<Entries>) {
         for e in entries {
