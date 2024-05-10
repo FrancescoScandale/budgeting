@@ -147,9 +147,10 @@ fn main() {
     let final_result: Vec<entries::Entries> = read_csv_input();
 
     if args.len() == 1 {
-        let json_string: String = serde_json::to_string(&final_result).unwrap();
+        let percentages: HashMap<categories::Categories,f32> = display_result::display_cli_result(final_result,"");
+        let json_string: String = serde_json::to_string(&percentages).unwrap();
         println!("{}", json_string);
     } else if args[1] == "cli" {
-        display_result::display_cli_result(final_result);
+        display_result::display_cli_result(final_result,"cli");
     }
 }
