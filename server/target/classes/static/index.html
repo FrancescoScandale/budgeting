@@ -5,6 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Upload</title>
+    <style>
+        .chart {
+            display: flex;
+            width: 100%;
+            height: 200px;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-top: 20px;
+        }
+    
+        .bar {
+            width: 50px;
+            background-color: blue;
+            text-align: center;
+            color: black;
+        }
+    </style>
 </head>
 
 <body>
@@ -29,19 +46,51 @@
             })
                 .then(response => response.text())
                 .then(result => {
-                    var responseDiv = document.getElementById('response');
-                    responseDiv.innerHTML = result;
                     // Hide the upload button after receiving the response
                     var uploadButton = document.getElementById('request');
                     if (uploadButton) {
                         uploadButton.style.display = 'none';
                     }
+                    // Display the pie chart
+                    displayChart(); 
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     var responseDiv = document.getElementById('response');
                     responseDiv.innerHTML = 'An error occurred while uploading the file';
                 });
+        }
+
+        function displayChart() {
+            var responseDiv = document.getElementById('response');
+
+            var chartDiv = document.createElement('div');
+            chartDiv.classList.add('chart');
+
+            var bars = [20, 30, 50]; // Example percentages
+            for (const element of bars) {
+                var barDiv = document.createElement('div');
+                barDiv.classList.add('bar');
+
+                barDiv.style.height = element + "%";
+                barDiv.textContent = element + "%";
+                barDiv.style.backgroundColor = getRandomColor(); // Function to generate random color
+
+                chartDiv.appendChild(barDiv);
+            }
+
+            //append chart
+            responseDiv.innerHTML = ''; //init
+            responseDiv.appendChild(chartDiv);
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
         }
     </script>
 </body>

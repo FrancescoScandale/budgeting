@@ -25,7 +25,7 @@ public class RustController {
     }
 
     @RequestMapping("/budgetInput")
-    public ResponseEntity<String> handleFileUpload(Model model, @RequestParam("file") MultipartFile file) throws InterruptedException{
+    public ResponseEntity<String> handleFileUpload(Model model, @RequestParam("file") MultipartFile file) throws InterruptedException {
         try {
             if(file.isEmpty()){
                 return ResponseEntity.ok("File is empty");
