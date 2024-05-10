@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::entries;
 use crate::categories::Categories;
 
-pub fn display_cli_result(final_result: Vec<entries::Entries>, argument: &str) -> HashMap<Categories,f32> {
+pub fn display_cli_result(final_result: Vec<entries::Entries>, argument: &str) -> HashMap<String,String> {
     let totals: HashMap<Categories,f32> = compute_totals(final_result);
 
     let percentages: HashMap<Categories,f32> = compute_percentages(totals);
@@ -12,9 +12,16 @@ pub fn display_cli_result(final_result: Vec<entries::Entries>, argument: &str) -
 
     if argument == "cli"{
         display_result(min_percentage,percentages.clone());
+        return HashMap::new();
     }
 
-    return percentages;
+    //convert f32 to String to use it in the HTML visualization
+    let mut html_percentages: HashMap<String,String> = HashMap::new();
+    for (c,p) in percentages {
+        html_percentages.insert(Categories::category_to_string(c), p.to_string());
+    }
+
+    return html_percentages;
 }
 
 fn compute_totals(final_result: Vec<entries::Entries>) -> HashMap<Categories,f32> {

@@ -147,7 +147,7 @@ fn main() {
     let final_result: Vec<entries::Entries> = read_csv_input();
 
     if args.len() == 1 {
-        let percentages: HashMap<categories::Categories,f32> = display_result::display_cli_result(final_result,"");
+        let percentages: HashMap<String,String> = display_result::display_cli_result(final_result,"");
         let json_string: String = serde_json::to_string(&percentages).unwrap();
         println!("{}", json_string);
     } else if args[1] == "cli" {
