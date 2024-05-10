@@ -9,5 +9,10 @@ Insert the report file (report.csv) in the specified directory (server/scripts/f
 To run the CLI application, run the following command from the "server" directory: <br>
 ```deliverables/budgeting cli```
 
+## Usage - Web Interface (in development)
+From the server directory run the following command, then connect to http://localhost:8080/ and upload the file:<br>
+```mvn spring-boot:run```
+
 ## In development
-Using a Spring-Boot maven application, create a webpage that allows a user to upload the report and receive analytics on it.
+Web interface now only works if all the descriptions are already present in the cache file.<br>
+Future developments include the possiblity to add the missing descriptions.
