@@ -1,0 +1,49 @@
+{
+  "values": [
+    {
+      "category": "groceries",
+      "entries": [
+        "L INSOLITO               CROTONE"
+      ]
+    },
+    {
+      "category": "fun",
+      "entries": [
+        "SAMIR SAS DE F.LLI BRUN  CRUCOLI",
+        "SumUp  *Be Positive      Crucoli Torre",
+        "VILLAGE S.CHIARA SNC DI GCIRO' MARINA"
+      ]
+    },
+    {
+      "category": "house",
+      "entries": [
+        "SAMIR SAS DE F.LLI BRU, CRUCOLI",
+        "SumUp  *Salumeria luis   Torretta",
+        "LA PASTICCERIA DEL CORSO CRUCOLI"
+      ]
+    },
+    {
+      "category": "food",
+      "entries": [
+        "PESCE FRITTO 'DA PICC..  MARONE",
+        "45181 CASTROCIELO, CASTROCIELO"
+      ]
+    },
+    {
+      "category": "car",
+      "entries": [
+        "ADS BISENZIO EST, CAMPI BISENZI",
+        "AUTOGRILL 0720           CASTROCIELO",
+        "ENI 08675, CARIATI",
+        "M M POMPA BIANCA, RANICA BG"
+      ]
+    },
+    {
+      "category": "subscriptions",
+      "entries": [
+        "LA SICILIANA, CROTONE",
+        "SumUp  *Renzo Luca       Crucoli"
+      ]
+    }
+  ]
+}
