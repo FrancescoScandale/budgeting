@@ -1,10 +1,13 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use categories::Categories;
 
 mod categories;
+mod configdata;
 
 async fn get_categories() -> impl Responder {
     // let items = state.items.lock().unwrap();
-    let items = categories::Categories::get_categories();
+    let categories: Categories = Categories::init_categories();
+    let items = categories.get_categories();
     HttpResponse::Ok().json(&*items)
 }
 

@@ -1,4 +1,5 @@
 {
     "CACHE_FILE": "files/cache.json",
-    "REPORT_FILE": "files/report.csv"
+    "REPORT_FILE": "files/report.csv",
+    "CATEGORIES_FILE": "files/categories.json"
 }
