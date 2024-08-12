@@ -26,22 +26,18 @@ impl Categories {
         print!("\n\n");
     }
 
-    pub fn init_categories() -> Categories {
-        //open config file
-        let config_file_path: String = format!("{}","files/config.json");
-        let config_file: File = File::open(config_file_path).expect("ERROR - CONFIG FILE NOT FOUND");
-        let config_data: ConfigData = from_reader(config_file).expect("ERROR - FAILED TO DESERIALIZE CONFIG FILE");
+    pub fn init_categories(username: String) -> Categories {
 
         //read categories file
-        let categories_file_path: String = format!("{}",&config_data.CATEGORIES_FILE);
-        let cache_file: File = File::open(categories_file_path.clone()).expect("ERROR - CACHE FILE NOT FOUND");
+        let categories_file_path: String = format!("{}/{}/{}","files/users",username,"categories.json");
+        let cache_file: File = File::open(categories_file_path.clone()).expect("ERROR - CATEGORIES FILE NOT FOUND");
         let categories: Categories = from_reader(cache_file).expect("ERROR - FAILED TO DESERIALIZE CATEGORIES FILE");
 
-        return categories;
+        categories
     }
 
     pub fn get_categories(&self) -> &Vec<String> {
-        return &self.categories;
+        &self.categories
     }
 
     // pub fn string_to_category(cat: &str) -> Categories {

@@ -4,9 +4,9 @@ use categories::Categories;
 mod categories;
 mod configdata;
 
-async fn get_categories() -> impl Responder {
-    // let items = state.items.lock().unwrap();
-    let categories: Categories = Categories::init_categories();
+async fn get_categories(param: web::Path<String>) -> impl Responder {
+    let username: String = param.into_inner();
+    let categories: Categories = Categories::init_categories(username);
     let items = categories.get_categories();
     HttpResponse::Ok().json(&*items)
 }
@@ -15,7 +15,7 @@ async fn get_categories() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
-            .route("/getcategories", web::get().to(get_categories))
+            .route("/getcategories/{id}", web::get().to(get_categories))
     })
     .bind("127.0.0.1:5858")?
     .run()
